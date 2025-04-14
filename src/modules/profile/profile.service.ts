@@ -6,27 +6,36 @@ import { ProgressDto } from './dto/progress.dto';
 export class ProfileService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async toggleFavorite(id: string, userId: string) {
-    await this.prisma.$transaction(async (prisma: PrismaService) => {
-      const userFavorites = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { favorites: { select: { id: true } } },
-      });
+  async toggleFavorite(audiobookId: string, userId: string) {
+    const existing = await this.prisma.favorite.findUnique({
+      where: {
+        userId_audiobookId: {
+          userId,
+          audiobookId,
+        },
+      },
+    });
 
-      const isExists = userFavorites?.favorites.some((book) => book.id === id);
-
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          favorites: {
-            [isExists ? 'disconnect' : 'connect']: { id: id },
+    if (existing) {
+      await this.prisma.favorite.delete({
+        where: {
+          userId_audiobookId: {
+            userId,
+            audiobookId,
           },
         },
       });
-    });
+    } else {
+      await this.prisma.favorite.create({
+        data: {
+          userId,
+          audiobookId,
+        },
+      });
+    }
+
     return true;
   }
-
   async saveProgress(progressDto: ProgressDto, userId: string) {
     const isExists = await this.prisma.progress.findUnique({
       where: {
