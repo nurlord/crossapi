@@ -1,0 +1,34 @@
+services:
+  db:
+    container_name: postgres
+    image: postgres:17.2
+    restart: no
+    shm_size: 128mb
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - ${POSTGRES_PORT}:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  redis:
+    container_name: redis
+    image: redis:7.4.1
+    restart: no
+    ports:
+      - ${REDIS_PORT}:6379
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  backend:

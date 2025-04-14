@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URI")
+}
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  username String @unique
+  password String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt() @map("updated_at")
+
+  favorites Favorite[]
+  progress Progress[]
+
+  @@map("users")
+}
+
+model Author {
+  id   String @id @default(uuid())
+  name String @unique
+
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt() @map("updated_at")
+  Audiobook Audiobook[]
+
+  @@map("authors")
+}
+
+model Audiobook {
+  id          String   @id @default(uuid())
+  title       String
+  author      Author   @relation(fields: [authorId], references: [id])
+  authorId    String
+  description String
+  coverUrl    String?  @map("cover_url")
+  category    Category @relation(fields: [categoryId], references: [id])
+  fileName    String
+
+  categoryId  String
+  publishedAt DateTime @map("published_at")
+
+  favorites Favorite[]
+  progress  Progress[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt() @map("updated_at")
+
+  @@map("audiobooks")
+}
+
+model Category {
+  id   String @id @default(uuid())
+  name String @unique
+
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt() @map("updated_at")
+  audiobook Audiobook[]
+
+  @@map("categories")
+}
+
+model Favorite {
+  id          String    @id @default(uuid())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  audiobook   Audiobook @relation(fields: [audiobookId], references: [id])
+  audiobookId String
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, audiobookId])
+  @@map("favorites")
+}
+
+model Progress {
+  id          String    @id @default(uuid())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  audiobook   Audiobook @relation(fields: [audiobookId], references: [id])
+  audiobookId String
+
+  positionSec Int @map("position_sec")
+
+  updatedAt DateTime @updatedAt() @map("updated_at")
+
+  @@unique([userId, audiobookId])
+  @@map("progress")
+}
