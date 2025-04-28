@@ -7,21 +7,17 @@ import {
   Param,
   Req,
   Res,
-  StreamableFile,
 } from '@nestjs/common';
-import path, { join } from 'path';
+import { join } from 'path';
 import { Response, Request } from 'express';
 import * as fs from 'fs';
 import RangeParser from 'range-parser';
-import {
-  ApiOperation,
-  ApiParam,
-  ApiRequestedRangeNotSatisfiableResponse,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Public } from '@/src/shared/decorators/public.decorator';
 
 @Controller('stream')
 export class StreamController {
+  @Public()
   @Get(':name')
   @ApiOperation({ summary: 'Stream audio file by range' })
   @ApiResponse({
@@ -66,14 +62,12 @@ export class StreamController {
     const { start, end } = ranges[0];
     console.log(`Range start: ${start}, end: ${end}`);
 
-    // Set the response headers for partial content
     res.status(HttpStatus.PARTIAL_CONTENT);
     res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
     res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader('Content-Length', end - start + 1);
-    res.setHeader('Content-Type', 'audio/mpeg'); // Adjust MIME type based on file type
+    res.setHeader('Content-Type', 'audio/mpeg');
 
-    // Open the file stream and send the range
     const stream = fs.createReadStream(filePath, { start, end });
     stream.pipe(res);
   }
