@@ -30,6 +30,7 @@ export class BooksController {
     return this.booksService.findAll();
   }
 
+  @Public()
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Audiobook> {
     return this.booksService.findOne(id);
