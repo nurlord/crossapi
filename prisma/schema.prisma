@@ -42,6 +42,7 @@ model Audiobook {
   coverUrl    String?  @map("cover_url")
   category    Category @relation(fields: [categoryId], references: [id])
   fileName    String
+  pdfUrl      String?  @map("pdf_url")
 
   categoryId  String
   publishedAt DateTime @map("published_at")
