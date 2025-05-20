@@ -4,9 +4,11 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   Req,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -15,6 +17,7 @@ import { Request, Response } from 'express';
 import { UsersService } from './users/users.service';
 import { CreateUserDto } from './users/dto/create-user.dto';
 import { Public } from '@/src/shared/decorators/public.decorator';
+import { UpdateUserDto } from './users/dto/update-user.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -41,6 +44,17 @@ export class AuthController {
       message: 'Login successful',
       rest,
       sessionId,
+    };
+  }
+
+  @Patch('update')
+  async updateUser(@Req() req: Request, @Body() dto: UpdateUserDto) {
+    const userId = req.session.userId;
+    if (!userId) throw new UnauthorizedException();
+    const updatedUser = await this.usersService.update(userId, dto);
+    return {
+      message: 'User updated successfully',
+      user: updatedUser,
     };
   }
 

@@ -1,8 +1,13 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from '@/src/core/prisma/prisma.service';
 import { hash } from 'argon2';
 import { User } from '@prisma/client';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -65,5 +70,24 @@ export class UsersService {
       },
     });
     return user;
+  }
+
+  public async update(userId: string, dto: UpdateUserDto) {
+    const isUser = await this.prismaService.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!isUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    const updatedUser = await this.prismaService.user.update({
+      where: { id: userId },
+      data: {
+        ...dto,
+      },
+    });
+
+    return updatedUser;
   }
 }
